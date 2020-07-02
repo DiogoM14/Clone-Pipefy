@@ -45,6 +45,8 @@ export default function Card({data, index, listIndex}) {
       }
 
       move(draggedListIndex, draggedIndex, targetIndex);
+
+      item.index = targetIndex;
     }
   })
 
