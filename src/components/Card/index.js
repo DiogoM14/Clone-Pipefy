@@ -1,17 +1,56 @@
-import React from 'react';
+import React, { useRef } from 'react';
+import { useDrag, useDrop } from 'react-dnd';
 
 import { Container, Label } from './styles';
 
-function Card() {
+export default function Card({data, index}) {
+  const ref = useRef();
+
+  const [{ isDragging }, dragRef] = useDrag({
+    item: { type: 'CARD', index},
+    collect: monitor => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  const [, dropRef] = useDrop({
+    accept: 'CARD',
+    hover(item, monitor) {
+      const draggedIndex = item.index;
+      const targetIndex = index;
+
+      if (draggedIndex === targetIndex) {
+        return;
+      }
+
+      const targetSize = ref.current.getBoundingClientRect();
+      const targetCenter = (targetSize.bottom - targetSize.top) / 2;
+
+      const draggedOffset = monitor.getClientOffset();
+      const draggedTop = draggedOffset.y - targetSize.top;
+
+      if (draggedIndex < targetIndex && draggedTop < targetCenter) {
+        return;
+
+      }
+
+      if (draggedIndex > targetIndex && draggedTop > targetCenter) {
+        return;
+      }
+
+
+    }
+  })
+
+  dragRef(dropRef(ref));
+
   return(
-    <Container>
+    <Container ref={ref} isDragging={isDragging}>
       <header>
-        <Label color="red" />
+        {data.labels.map(label => <Label key={label} color={label} />)}
       </header>
-      <p>Fazer a migração completa do servidor</p>
-      <img src="https://api.adorable.io/avatars/285/Diogo Xavier.png" alt="avatar" />
+      <p>{data.content}</p>
+      { data.user && <img src={data.user} alt="avatar" />}
     </Container>
   );
 }
-
-export default Card;
